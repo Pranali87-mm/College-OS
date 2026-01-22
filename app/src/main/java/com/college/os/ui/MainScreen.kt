@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -35,6 +36,7 @@ import com.college.os.feature.attendance.presentation.AttendanceScreen
 import com.college.os.feature.dashboard.presentation.DashboardScreen
 import com.college.os.feature.notes.presentation.NotesScreen
 import com.college.os.feature.planner.presentation.PlannerScreen
+import com.college.os.feature.search.presentation.SearchScreen
 import com.college.os.feature.timetable.presentation.TimetableScreen
 import com.college.os.feature.timer.presentation.TimerScreen
 import kotlinx.coroutines.launch
@@ -48,6 +50,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     object Timetable : Screen("timetable", "Timetable", Icons.Default.List)
     object Notes : Screen("notes", "Notes", Icons.Default.Edit)
     object Timer : Screen("timer", "Focus Timer", Icons.Default.Star)
+    object Search : Screen("search", "Search", Icons.Default.Search) // Added Search Route
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,7 +60,7 @@ fun MainScreen() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // Permission Logic for Notifications (Android 13+)
+    // Permission Logic
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { }
@@ -68,8 +71,8 @@ fun MainScreen() {
         }
     }
 
-    // List of sidebar items
-    val items = listOf(
+    // Sidebar items (Search is NOT here, it lives in the top bar)
+    val sidebarItems = listOf(
         Screen.Planner,
         Screen.Dashboard,
         Screen.Attendance,
@@ -82,13 +85,17 @@ fun MainScreen() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Determine current title based on route
-    val currentScreen = items.find {
+    // Determine current title
+    val currentScreen = sidebarItems.find {
         currentDestination?.hierarchy?.any { dest -> dest.route == it.route } == true
     } ?: Screen.Planner
 
+    // Check if we are on the Search Screen (to hide the top bar or handle it differently)
+    val isSearchScreen = currentDestination?.route == Screen.Search.route
+
     ModalNavigationDrawer(
         drawerState = drawerState,
+        gesturesEnabled = !isSearchScreen, // Disable swipe to open drawer when in search
         drawerContent = {
             ModalDrawerSheet {
                 // Sidebar Header
@@ -116,8 +123,7 @@ fun MainScreen() {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Sidebar Items
-                items.forEach { screen ->
+                sidebarItems.forEach { screen ->
                     NavigationDrawerItem(
                         icon = { Icon(screen.icon, contentDescription = null) },
                         label = { Text(screen.title) },
@@ -140,19 +146,28 @@ fun MainScreen() {
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text(currentScreen.title) },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                // Hide global top bar when on Search screen (it has its own)
+                if (!isSearchScreen) {
+                    TopAppBar(
+                        title = { Text(currentScreen.title) },
+                        navigationIcon = {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(Icons.Default.Menu, contentDescription = "Menu")
+                            }
+                        },
+                        actions = {
+                            // --- SEARCH ICON ---
+                            IconButton(onClick = { navController.navigate(Screen.Search.route) }) {
+                                Icon(Icons.Default.Search, contentDescription = "Search")
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            titleContentColor = MaterialTheme.colorScheme.onSurface,
+                            navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                        )
                     )
-                )
+                }
             }
         ) { innerPadding ->
             NavHost(
@@ -167,6 +182,11 @@ fun MainScreen() {
                 composable(Screen.Timetable.route) { TimetableScreen() }
                 composable(Screen.Notes.route) { NotesScreen() }
                 composable(Screen.Timer.route) { TimerScreen() }
+
+                // --- Search Route ---
+                composable(Screen.Search.route) {
+                    SearchScreen(onBack = { navController.popBackStack() })
+                }
             }
         }
     }
