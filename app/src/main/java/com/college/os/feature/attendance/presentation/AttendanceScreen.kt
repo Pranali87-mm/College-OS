@@ -1,12 +1,13 @@
 package com.college.os.feature.attendance.presentation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -19,81 +20,37 @@ fun AttendanceScreen(
     // 1. Collect State from ViewModel
     val subjects by viewModel.subjects.collectAsStateWithLifecycle()
 
-    // Local state for the "Add Subject" dialog
-    var showDialog by remember { mutableStateOf(false) }
+    // Note: We removed the local "Add" state because subjects will now come from the Timetable.
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Attendance") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showDialog = true },
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onSecondary
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Subject")
-            }
-        }
+        // No TopAppBar (Global handles it)
+        // No FloatingActionButton (Sync handles it)
     ) { innerPadding ->
 
-        // 2. The List
-        LazyColumn(
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            items(subjects) { subject ->
-                AttendanceItem(
-                    subject = subject,
-                    onPresent = { viewModel.onPresentClick(subject) },
-                    onAbsent = { viewModel.onAbsentClick(subject) },
-                    onDelete = { viewModel.onDeleteSubject(subject) }
+        if (subjects.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Add classes in Timetable to start tracking.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.secondary
                 )
             }
-        }
-
-        // 3. The Dialog
-        if (showDialog) {
-            AddSubjectDialog(
-                onDismiss = { showDialog = false },
-                onConfirm = { name ->
-                    viewModel.onAddSubject(name)
-                    showDialog = false
+        } else {
+            LazyColumn(
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                items(subjects) { subject ->
+                    AttendanceItem(
+                        subject = subject,
+                        onPresent = { viewModel.onPresentClick(subject) },
+                        onAbsent = { viewModel.onAbsentClick(subject) },
+                        onDelete = { viewModel.onDeleteSubject(subject) }
+                    )
                 }
-            )
+            }
         }
     }
-}
-
-@Composable
-fun AddSubjectDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
-    var text by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("New Subject") },
-        text = {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                label = { Text("Subject Name") },
-                singleLine = true
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = { if (text.isNotBlank()) onConfirm(text) }) {
-                Text("Add")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
 }

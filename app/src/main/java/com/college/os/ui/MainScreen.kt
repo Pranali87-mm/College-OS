@@ -1,14 +1,21 @@
 package com.college.os.ui
 
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -17,64 +24,119 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.college.os.feature.assignments.presentation.AssignmentsScreen
 import com.college.os.feature.attendance.presentation.AttendanceScreen
+import com.college.os.feature.timetable.presentation.TimetableScreen
+import kotlinx.coroutines.launch
 
-// Define our App Destinations
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object Attendance : Screen("attendance", "Attendance", Icons.Default.Home)
     object Assignments : Screen("assignments", "Assignments", Icons.Default.DateRange)
+    object Timetable : Screen("timetable", "Timetable", Icons.Default.List)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
-    // List of tabs
     val items = listOf(
         Screen.Attendance,
-        Screen.Assignments
+        Screen.Assignments,
+        Screen.Timetable
     )
 
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
 
+    // Determine current title based on route
+    val currentScreen = items.find {
+        currentDestination?.hierarchy?.any { dest -> dest.route == it.route } == true
+    } ?: Screen.Attendance
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                // Sidebar Header
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(160.dp)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Column(modifier = Modifier.padding(24.dp)) {
+                        Text(
+                            text = "College OS",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Text(
+                            text = "Student Dashboard",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Sidebar Items
                 items.forEach { screen ->
-                    NavigationBarItem(
+                    NavigationDrawerItem(
                         icon = { Icon(screen.icon, contentDescription = null) },
                         label = { Text(screen.title) },
                         selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                         onClick = {
+                            scope.launch { drawerState.close() }
                             navController.navigate(screen.route) {
-                                // Pop up to the start destination of the graph to
-                                // avoid building up a large stack of destinations
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true
                                 }
-                                // Avoid multiple copies of the same destination when
-                                // re-selecting the same item
                                 launchSingleTop = true
-                                // Restore state when re-selecting a previously selected item
                                 restoreState = true
                             }
-                        }
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }
             }
         }
-    ) { innerPadding ->
-        // The container that swaps the screens
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Attendance.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(Screen.Attendance.route) {
-                AttendanceScreen()
+    ) {
+        Scaffold(
+            topBar = {
+                // Global Top Bar with Menu Button
+                TopAppBar(
+                    title = { Text(currentScreen.title) },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                )
             }
-            composable(Screen.Assignments.route) {
-                AssignmentsScreen()
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Attendance.route,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                composable(Screen.Attendance.route) {
+                    AttendanceScreen()
+                }
+                composable(Screen.Assignments.route) {
+                    AssignmentsScreen()
+                }
+                composable(Screen.Timetable.route) {
+                    TimetableScreen()
+                }
             }
         }
     }

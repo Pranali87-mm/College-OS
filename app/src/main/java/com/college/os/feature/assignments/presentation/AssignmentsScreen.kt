@@ -24,15 +24,7 @@ fun AssignmentsScreen(
     var showAddDialog by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Assignments") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        },
+        // Removed TopAppBar to avoid double headers with MainScreen
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showAddDialog = true },
@@ -45,7 +37,7 @@ fun AssignmentsScreen(
     ) { innerPadding ->
 
         if (assignments.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
                 Text("No pending assignments. Relax!", color = MaterialTheme.colorScheme.secondary)
             }
         } else {
