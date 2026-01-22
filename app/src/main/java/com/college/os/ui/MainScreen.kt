@@ -25,12 +25,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.college.os.core.settings.SettingsRepository
 import com.college.os.feature.assignments.presentation.AssignmentsScreen
 import com.college.os.feature.attendance.presentation.AttendanceScreen
 import com.college.os.feature.dashboard.presentation.DashboardScreen
@@ -39,7 +43,9 @@ import com.college.os.feature.planner.presentation.PlannerScreen
 import com.college.os.feature.search.presentation.SearchScreen
 import com.college.os.feature.timetable.presentation.TimetableScreen
 import com.college.os.feature.timer.presentation.TimerScreen
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 // Define our App Destinations
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
@@ -50,15 +56,28 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     object Timetable : Screen("timetable", "Timetable", Icons.Default.List)
     object Notes : Screen("notes", "Notes", Icons.Default.Edit)
     object Timer : Screen("timer", "Focus Timer", Icons.Default.Star)
-    object Search : Screen("search", "Search", Icons.Default.Search) // Added Search Route
+    object Search : Screen("search", "Search", Icons.Default.Search)
+}
+
+// --- NEW: ViewModel to fetch the name ---
+@HiltViewModel
+class MainScreenViewModel @Inject constructor(
+    settingsRepository: SettingsRepository
+) : ViewModel() {
+    val userName = settingsRepository.userName
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    viewModel: MainScreenViewModel = hiltViewModel() // Inject the ViewModel
+) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    // --- NEW: Collect the User Name ---
+    val userName by viewModel.userName.collectAsStateWithLifecycle(initialValue = "Student")
 
     // Permission Logic
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -71,8 +90,7 @@ fun MainScreen() {
         }
     }
 
-    // Sidebar items (Search is NOT here, it lives in the top bar)
-    val sidebarItems = listOf(
+    val items = listOf(
         Screen.Planner,
         Screen.Dashboard,
         Screen.Attendance,
@@ -85,17 +103,15 @@ fun MainScreen() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Determine current title
-    val currentScreen = sidebarItems.find {
+    val currentScreen = items.find {
         currentDestination?.hierarchy?.any { dest -> dest.route == it.route } == true
     } ?: Screen.Planner
 
-    // Check if we are on the Search Screen (to hide the top bar or handle it differently)
     val isSearchScreen = currentDestination?.route == Screen.Search.route
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = !isSearchScreen, // Disable swipe to open drawer when in search
+        gesturesEnabled = !isSearchScreen,
         drawerContent = {
             ModalDrawerSheet {
                 // Sidebar Header
@@ -113,9 +129,10 @@ fun MainScreen() {
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
+                        // --- UPDATED: Use dynamic name ---
                         Text(
-                            text = "Student Dashboard",
-                            fontSize = 14.sp,
+                            text = "Hello, $userName",
+                            fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                         )
                     }
@@ -123,7 +140,7 @@ fun MainScreen() {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                sidebarItems.forEach { screen ->
+                items.forEach { screen ->
                     NavigationDrawerItem(
                         icon = { Icon(screen.icon, contentDescription = null) },
                         label = { Text(screen.title) },
@@ -146,7 +163,6 @@ fun MainScreen() {
     ) {
         Scaffold(
             topBar = {
-                // Hide global top bar when on Search screen (it has its own)
                 if (!isSearchScreen) {
                     TopAppBar(
                         title = { Text(currentScreen.title) },
@@ -156,7 +172,6 @@ fun MainScreen() {
                             }
                         },
                         actions = {
-                            // --- SEARCH ICON ---
                             IconButton(onClick = { navController.navigate(Screen.Search.route) }) {
                                 Icon(Icons.Default.Search, contentDescription = "Search")
                             }
@@ -182,8 +197,6 @@ fun MainScreen() {
                 composable(Screen.Timetable.route) { TimetableScreen() }
                 composable(Screen.Notes.route) { NotesScreen() }
                 composable(Screen.Timer.route) { TimerScreen() }
-
-                // --- Search Route ---
                 composable(Screen.Search.route) {
                     SearchScreen(onBack = { navController.popBackStack() })
                 }

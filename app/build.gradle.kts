@@ -54,9 +54,7 @@ dependencies {
 
     // Navigation
     implementation(libs.androidx.navigation.compose)
-    // --- ADDED THIS LINE FOR HILT NAVIGATION ---
     implementation(libs.androidx.hilt.navigation.compose)
-    // ------------------------------------------
 
     // Hilt (Dependency Injection)
     implementation(libs.hilt.android)
@@ -75,6 +73,9 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+
+    // DataStore (Settings/Preferences) - NEW
+    implementation(libs.androidx.datastore.preferences)
 
     // Testing
     testImplementation(libs.junit)
