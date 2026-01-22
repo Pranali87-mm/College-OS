@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.college.os.core.data.CollegeDatabase
 import com.college.os.feature.assignments.data.AssignmentDao
 import com.college.os.feature.attendance.data.AttendanceDao
+import com.college.os.feature.notes.data.NoteDao
 import com.college.os.feature.timetable.data.TimetableDao
 import dagger.Module
 import dagger.Provides
@@ -27,7 +28,7 @@ object DatabaseModule {
             CollegeDatabase::class.java,
             "college_os_database"
         )
-            // Important: This handles the version upgrade (2 -> 3)
+            // Important: This handles the version upgrade (3 -> 4)
             // by recreating the DB if the schema changes.
             .fallbackToDestructiveMigration()
             .build()
@@ -43,9 +44,14 @@ object DatabaseModule {
         return database.assignmentDao()
     }
 
-    // New Provider for Timetable
     @Provides
     fun provideTimetableDao(database: CollegeDatabase): TimetableDao {
         return database.timetableDao()
+    }
+
+    // New Provider for Notes
+    @Provides
+    fun provideNoteDao(database: CollegeDatabase): NoteDao {
+        return database.noteDao()
     }
 }
