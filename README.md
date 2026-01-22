@@ -54,3 +54,82 @@ Great for portfolio + viva. :contentReference[oaicite:2]{index=2}
 ```bash
 git clone https://github.com/Pranali87-mm/College-OS.git
 cd College-OS
+
+Open in Android Studio
+
+Open Android Studio
+
+Click Open
+
+Select the project folder
+
+Build & Run
+
+Let Gradle sync
+
+Run on emulator or device
+
+No additional environment setup required
+
+📌 Usage
+
+Screens, features, and modules will expand over time.
+
+Right now, the app includes:
+
+Blank Android project setup
+
+Base navigation & project structure
+
+Modules ready for development
+
+Check project source code for current progress.
+
+🧾 Roadmap
+
+Phase 1 (MVP)
+
+Attendance
+
+Assignments
+
+Notes
+
+Exam tracker
+
+Phase 2
+
+Reminders
+
+AI helpers (summarize, smart alerts)
+
+Phase 3
+
+Analytics dashboard
+
+Sync & calendar integration
+
+🧩 Contributing
+
+This repo is a student project in progress — contributions are welcome!
+
+Fork the project
+
+Create a branch (git checkout -b feature/<name>)
+
+Make changes
+
+Commit (git commit -m "Add <feature>")
+
+Push (git push origin feature/<name>)
+
+Open a Pull Request
+
+📄 License
+
+This project is open-source and free to use.
+
+💬 Contact
+
+Created by Pranali87-mm
+Project: https://github.com/Pranali87-mm/College-OS
