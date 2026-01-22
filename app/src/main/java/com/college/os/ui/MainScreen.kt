@@ -1,5 +1,9 @@
 package com.college.os.ui
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -7,6 +11,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Star
@@ -15,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,6 +32,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.college.os.feature.assignments.presentation.AssignmentsScreen
 import com.college.os.feature.attendance.presentation.AttendanceScreen
+import com.college.os.feature.dashboard.presentation.DashboardScreen
 import com.college.os.feature.notes.presentation.NotesScreen
 import com.college.os.feature.planner.presentation.PlannerScreen
 import com.college.os.feature.timetable.presentation.TimetableScreen
@@ -35,11 +42,12 @@ import kotlinx.coroutines.launch
 // Define our App Destinations
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object Planner : Screen("planner", "Daily Plan", Icons.Default.DateRange)
+    object Dashboard : Screen("dashboard", "Analytics", Icons.Default.Info)
     object Attendance : Screen("attendance", "Attendance", Icons.Default.Home)
     object Assignments : Screen("assignments", "Assignments", Icons.Default.CheckCircle)
     object Timetable : Screen("timetable", "Timetable", Icons.Default.List)
     object Notes : Screen("notes", "Notes", Icons.Default.Edit)
-    object Timer : Screen("timer", "Focus Timer", Icons.Default.Star) // Added Timer
+    object Timer : Screen("timer", "Focus Timer", Icons.Default.Star)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,19 +57,32 @@ fun MainScreen() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    // Permission Logic for Notifications (Android 13+)
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { }
+    )
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     // List of sidebar items
     val items = listOf(
         Screen.Planner,
+        Screen.Dashboard,
         Screen.Attendance,
         Screen.Assignments,
         Screen.Timetable,
         Screen.Notes,
-        Screen.Timer // Added Timer
+        Screen.Timer
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
+    // Determine current title based on route
     val currentScreen = items.find {
         currentDestination?.hierarchy?.any { dest -> dest.route == it.route } == true
     } ?: Screen.Planner
@@ -139,24 +160,13 @@ fun MainScreen() {
                 startDestination = Screen.Planner.route,
                 modifier = Modifier.padding(innerPadding)
             ) {
-                composable(Screen.Planner.route) {
-                    PlannerScreen()
-                }
-                composable(Screen.Attendance.route) {
-                    AttendanceScreen()
-                }
-                composable(Screen.Assignments.route) {
-                    AssignmentsScreen()
-                }
-                composable(Screen.Timetable.route) {
-                    TimetableScreen()
-                }
-                composable(Screen.Notes.route) {
-                    NotesScreen()
-                }
-                composable(Screen.Timer.route) { // Added Timer Route
-                    TimerScreen()
-                }
+                composable(Screen.Planner.route) { PlannerScreen() }
+                composable(Screen.Dashboard.route) { DashboardScreen() }
+                composable(Screen.Attendance.route) { AttendanceScreen() }
+                composable(Screen.Assignments.route) { AssignmentsScreen() }
+                composable(Screen.Timetable.route) { TimetableScreen() }
+                composable(Screen.Notes.route) { NotesScreen() }
+                composable(Screen.Timer.route) { TimerScreen() }
             }
         }
     }
