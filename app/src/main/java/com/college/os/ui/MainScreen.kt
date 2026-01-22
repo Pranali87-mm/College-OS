@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -40,6 +41,7 @@ import com.college.os.feature.attendance.presentation.AttendanceScreen
 import com.college.os.feature.dashboard.presentation.DashboardScreen
 import com.college.os.feature.notes.presentation.NotesScreen
 import com.college.os.feature.planner.presentation.PlannerScreen
+import com.college.os.feature.resume.presentation.ResumeScreen
 import com.college.os.feature.search.presentation.SearchScreen
 import com.college.os.feature.timetable.presentation.TimetableScreen
 import com.college.os.feature.timer.presentation.TimerScreen
@@ -56,10 +58,11 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     object Timetable : Screen("timetable", "Timetable", Icons.Default.List)
     object Notes : Screen("notes", "Notes", Icons.Default.Edit)
     object Timer : Screen("timer", "Focus Timer", Icons.Default.Star)
+    object Resume : Screen("resume", "Resume Builder", Icons.Default.Person) // Resume Feature
     object Search : Screen("search", "Search", Icons.Default.Search)
 }
 
-// --- NEW: ViewModel to fetch the name ---
+// ViewModel to fetch the user name for the sidebar
 @HiltViewModel
 class MainScreenViewModel @Inject constructor(
     settingsRepository: SettingsRepository
@@ -70,16 +73,16 @@ class MainScreenViewModel @Inject constructor(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    viewModel: MainScreenViewModel = hiltViewModel() // Inject the ViewModel
+    viewModel: MainScreenViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // --- NEW: Collect the User Name ---
+    // Fetch User Name for Header
     val userName by viewModel.userName.collectAsStateWithLifecycle(initialValue = "Student")
 
-    // Permission Logic
+    // Permission Logic for Notifications
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { }
@@ -90,6 +93,7 @@ fun MainScreen(
         }
     }
 
+    // Sidebar items
     val items = listOf(
         Screen.Planner,
         Screen.Dashboard,
@@ -97,7 +101,8 @@ fun MainScreen(
         Screen.Assignments,
         Screen.Timetable,
         Screen.Notes,
-        Screen.Timer
+        Screen.Timer,
+        Screen.Resume
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -129,7 +134,6 @@ fun MainScreen(
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
-                        // --- UPDATED: Use dynamic name ---
                         Text(
                             text = "Hello, $userName",
                             fontSize = 16.sp,
@@ -197,6 +201,8 @@ fun MainScreen(
                 composable(Screen.Timetable.route) { TimetableScreen() }
                 composable(Screen.Notes.route) { NotesScreen() }
                 composable(Screen.Timer.route) { TimerScreen() }
+                composable(Screen.Resume.route) { ResumeScreen() }
+
                 composable(Screen.Search.route) {
                     SearchScreen(onBack = { navController.popBackStack() })
                 }
