@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.2"
+agp = "8.6.0" # Changed from 8.7.0 for better stability
 kotlin = "2.0.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
@@ -9,10 +9,8 @@ lifecycleRuntimeKtx = "2.8.6"
 activityCompose = "1.9.3"
 composeBom = "2024.09.00"
 hilt = "2.51.1"
-# --- ADDED THIS VERSION ---
 hiltNavigationCompose = "1.2.0"
-# --------------------------
-ksp = "2.0.0-1.0.21"
+ksp = "2.0.0-1.0.24" # UPDATED: Changed from 1.0.21 to 1.0.24 to fix the error
 room = "2.6.1"
 retrofit = "2.9.0"
 okhttp = "4.12.0"
@@ -37,9 +35,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 
 # Navigation
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
-# --- ADDED THIS LIBRARY ---
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
-# --------------------------
 
 # Hilt (Dependency Injection)
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }

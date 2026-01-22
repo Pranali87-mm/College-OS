@@ -3,6 +3,7 @@ package com.college.os.core.di
 import android.content.Context
 import androidx.room.Room
 import com.college.os.core.data.CollegeDatabase
+import com.college.os.feature.assignments.data.AssignmentDao
 import com.college.os.feature.attendance.data.AttendanceDao
 import dagger.Module
 import dagger.Provides
@@ -15,7 +16,6 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
-    // 1. Provide the Database Instance
     @Provides
     @Singleton
     fun provideDatabase(
@@ -26,15 +26,20 @@ object DatabaseModule {
             CollegeDatabase::class.java,
             "college_os_database"
         )
-            // .fallbackToDestructiveMigration() // Uncomment this during dev if you change schema often
+            // Important: This allows us to change database versions (1 -> 2)
+            // without crashing. It recreates the DB if the schema changes.
+            .fallbackToDestructiveMigration()
             .build()
     }
 
-    // 2. Provide the Attendance Dao
-    // Now, any Repository that needs 'AttendanceDao' just asks for it,
-    // and Hilt extracts it from the database automatically.
     @Provides
     fun provideAttendanceDao(database: CollegeDatabase): AttendanceDao {
         return database.attendanceDao()
+    }
+
+    // New Provider for Assignments
+    @Provides
+    fun provideAssignmentDao(database: CollegeDatabase): AssignmentDao {
+        return database.assignmentDao()
     }
 }

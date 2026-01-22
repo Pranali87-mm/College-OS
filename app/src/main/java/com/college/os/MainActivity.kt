@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.college.os.feature.attendance.presentation.AttendanceScreen
+import com.college.os.ui.MainScreen
 import com.college.os.ui.theme.CollegeOSTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -24,7 +24,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AttendanceScreen()
+                    // This calls the Bottom Navigation container
+                    MainScreen()
                 }
             }
         }
