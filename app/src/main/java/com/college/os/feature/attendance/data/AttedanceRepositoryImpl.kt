@@ -4,11 +4,6 @@ import com.college.os.feature.attendance.domain.AttendanceRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-/**
- * The Worker.
- * This lives in the "Data" layer. It implements the contract using the DAO.
- * @Inject constructor: Tells Hilt "I need the Dao to work, please give it to me."
- */
 class AttendanceRepositoryImpl @Inject constructor(
     private val dao: AttendanceDao
 ) : AttendanceRepository {
@@ -19,6 +14,11 @@ class AttendanceRepositoryImpl @Inject constructor(
 
     override suspend fun getSubjectById(id: Int): AttendanceEntity? {
         return dao.getSubjectById(id)
+    }
+
+    // --- NEW: Implementation ---
+    override suspend fun getSubjectByName(name: String): AttendanceEntity? {
+        return dao.getSubjectByName(name)
     }
 
     override suspend fun insertSubject(subject: AttendanceEntity) {

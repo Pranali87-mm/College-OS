@@ -3,6 +3,7 @@ package com.college.os.feature.timetable.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.college.os.feature.timetable.data.TimetableEntity
+import com.college.os.feature.timetable.domain.AddClassWithSyncUseCase
 import com.college.os.feature.timetable.domain.GetWeeklyTimetableUseCase
 import com.college.os.feature.timetable.domain.TimetableRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,10 +16,10 @@ import javax.inject.Inject
 @HiltViewModel
 class TimetableViewModel @Inject constructor(
     private val getWeeklyTimetableUseCase: GetWeeklyTimetableUseCase,
+    private val addClassWithSyncUseCase: AddClassWithSyncUseCase, // Injected the new Use Case
     private val repository: TimetableRepository
 ) : ViewModel() {
 
-    // The full schedule
     val timetable: StateFlow<List<TimetableEntity>> = getWeeklyTimetableUseCase()
         .stateIn(
             scope = viewModelScope,
@@ -34,14 +35,8 @@ class TimetableViewModel @Inject constructor(
         isTheory: Boolean
     ) {
         viewModelScope.launch {
-            val newClass = TimetableEntity(
-                dayOfWeek = day,
-                subjectName = subject,
-                startTime = startTime,
-                endTime = endTime,
-                isTheory = isTheory
-            )
-            repository.insertClass(newClass)
+            // Delegating to the smart Use Case to handle saving + syncing
+            addClassWithSyncUseCase(day, subject, startTime, endTime, isTheory)
         }
     }
 
