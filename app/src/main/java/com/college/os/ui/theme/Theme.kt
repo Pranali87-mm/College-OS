@@ -7,31 +7,38 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import androidx.compose.ui.graphics.Color
 
-// For now, we focus on the Light Theme to perfect the Minimal look.
 private val LightColorScheme = lightColorScheme(
     primary = CollegePrimary,
     onPrimary = CollegeOnPrimary,
     primaryContainer = CollegePrimaryContainer,
+    onPrimaryContainer = CollegeOnPrimaryContainer,
     secondary = CollegeSecondary,
     onSecondary = CollegeOnSecondary,
     secondaryContainer = CollegeSecondaryContainer,
+    onSecondaryContainer = CollegeOnSecondaryContainer,
     tertiary = CollegeTertiary,
     background = CollegeBackground,
     surface = CollegeSurface,
     onSurface = CollegeOnSurface,
 )
 
-// We can define a Dark Scheme later, but we start with Light for clarity.
 private val DarkColorScheme = darkColorScheme(
-    primary = CollegePrimary,
-    onPrimary = CollegeOnPrimary,
-    background = Color(0xFF121212),
-    surface = Color(0xFF1E1E1E)
+    primary = CollegePrimaryDark,
+    onPrimary = CollegeOnPrimaryDark,
+    primaryContainer = CollegePrimaryContainerDark,
+    onPrimaryContainer = CollegeOnPrimary.copy(alpha = 0.9f), // Keep text readable
+    secondary = CollegeSecondaryDark,
+    onSecondary = CollegeOnSecondaryDark,
+    secondaryContainer = CollegeSecondaryContainerDark,
+    background = CollegeBackgroundDark,
+    surface = CollegeSurfaceDark,
+    onSurface = CollegeOnSurfaceDark,
+    onSurfaceVariant = Color(0xFFC4C6D0) // Lighter variant for subtitles in dark mode
 )
 
 @Composable
@@ -50,16 +57,16 @@ fun CollegeOSTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            // Set the status bar color to match the background for a seamless look
             window.statusBarColor = colorScheme.background.toArgb()
-            // If light theme, use dark icons on status bar
+
+            // In Dark Mode, we want light icons (so isAppearanceLightStatusBars = false)
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography, // Uses default Material 3 typography for now
+        typography = Typography,
         content = content
     )
 }
