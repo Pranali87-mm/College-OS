@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+// This import is CRITICAL. Without it, the app crashes.
 import com.college.os.ui.MainScreen
 import com.college.os.ui.theme.CollegeOSTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -19,12 +20,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CollegeOSTheme {
-                // Surface ensures the background color matches our Theme (Paper White)
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // This calls the Bottom Navigation container
                     MainScreen()
                 }
             }

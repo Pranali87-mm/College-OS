@@ -3,6 +3,7 @@ package com.college.os.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
@@ -25,13 +26,15 @@ import androidx.navigation.compose.rememberNavController
 import com.college.os.feature.assignments.presentation.AssignmentsScreen
 import com.college.os.feature.attendance.presentation.AttendanceScreen
 import com.college.os.feature.notes.presentation.NotesScreen
+import com.college.os.feature.planner.presentation.PlannerScreen
 import com.college.os.feature.timetable.presentation.TimetableScreen
 import kotlinx.coroutines.launch
 
 // Define our App Destinations
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
+    object Planner : Screen("planner", "Daily Plan", Icons.Default.DateRange)
     object Attendance : Screen("attendance", "Attendance", Icons.Default.Home)
-    object Assignments : Screen("assignments", "Assignments", Icons.Default.DateRange)
+    object Assignments : Screen("assignments", "Assignments", Icons.Default.CheckCircle)
     object Timetable : Screen("timetable", "Timetable", Icons.Default.List)
     object Notes : Screen("notes", "Notes", Icons.Default.Edit)
 }
@@ -45,6 +48,7 @@ fun MainScreen() {
 
     // List of sidebar items
     val items = listOf(
+        Screen.Planner,
         Screen.Attendance,
         Screen.Assignments,
         Screen.Timetable,
@@ -54,10 +58,9 @@ fun MainScreen() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Determine current title based on route to update TopBar
     val currentScreen = items.find {
         currentDestination?.hierarchy?.any { dest -> dest.route == it.route } == true
-    } ?: Screen.Attendance
+    } ?: Screen.Planner
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -97,7 +100,6 @@ fun MainScreen() {
                         onClick = {
                             scope.launch { drawerState.close() }
                             navController.navigate(screen.route) {
-                                // Pop up to the start destination to avoid large stacks
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true
                                 }
@@ -113,7 +115,6 @@ fun MainScreen() {
     ) {
         Scaffold(
             topBar = {
-                // Global Top Bar with Menu Button
                 TopAppBar(
                     title = { Text(currentScreen.title) },
                     navigationIcon = {
@@ -129,12 +130,14 @@ fun MainScreen() {
                 )
             }
         ) { innerPadding ->
-            // The Container that swaps screens
             NavHost(
                 navController = navController,
-                startDestination = Screen.Attendance.route,
+                startDestination = Screen.Planner.route,
                 modifier = Modifier.padding(innerPadding)
             ) {
+                composable(Screen.Planner.route) {
+                    PlannerScreen()
+                }
                 composable(Screen.Attendance.route) {
                     AttendanceScreen()
                 }
