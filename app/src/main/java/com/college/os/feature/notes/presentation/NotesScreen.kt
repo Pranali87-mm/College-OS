@@ -27,7 +27,7 @@ fun NotesScreen(
                 onClick = { showDialog = true },
                 containerColor = MaterialTheme.colorScheme.secondary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Note")
+                Icon(Icons.Default.Add, contentDescription = "Add Sticky Note")
             }
         }
     ) { innerPadding ->
@@ -37,12 +37,11 @@ fun NotesScreen(
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Your mind is clear.", color = MaterialTheme.colorScheme.secondary)
+                Text("No sticky notes yet.", color = MaterialTheme.colorScheme.secondary)
             }
         } else {
-            // The Modern Staggered Grid
             LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Fixed(2), // 2 Columns
+                columns = StaggeredGridCells.Fixed(2),
                 contentPadding = PaddingValues(8.dp),
                 verticalItemSpacing = 4.dp,
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -79,7 +78,7 @@ fun AddNoteDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("New Note") },
+        title = { Text("New Sticky Note") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
@@ -93,7 +92,7 @@ fun AddNoteDialog(
                     value = content,
                     onValueChange = { content = it },
                     label = { Text("Content") },
-                    modifier = Modifier.fillMaxWidth().height(150.dp), // Taller box for typing
+                    modifier = Modifier.fillMaxWidth().height(150.dp),
                     maxLines = 10
                 )
             }

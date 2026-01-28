@@ -34,13 +34,12 @@ fun SearchScreen(
 
     Scaffold(
         topBar = {
-            // Special Search Bar Header
             TopAppBar(
                 title = {
                     TextField(
                         value = query,
                         onValueChange = { viewModel.onQueryChanged(it) },
-                        placeholder = { Text("Search everywhere...") },
+                        placeholder = { Text("Find classes, tasks, or sticky notes") },
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
@@ -68,7 +67,6 @@ fun SearchScreen(
     ) { innerPadding ->
 
         if (query.isEmpty()) {
-            // Empty State (Initial)
             Box(
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
                 contentAlignment = Alignment.Center
@@ -76,11 +74,10 @@ fun SearchScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.surfaceVariant)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Find classes, tasks, or notes", color = MaterialTheme.colorScheme.secondary)
+                    Text("Find classes, tasks, or sticky notes", color = MaterialTheme.colorScheme.secondary)
                 }
             }
         } else if (results.isEmpty()) {
-            // Empty State (No Results)
             Box(
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
                 contentAlignment = Alignment.Center
@@ -88,7 +85,6 @@ fun SearchScreen(
                 Text("No results found for '$query'", color = MaterialTheme.colorScheme.secondary)
             }
         } else {
-            // Results List
             LazyColumn(
                 modifier = Modifier.padding(innerPadding),
                 contentPadding = PaddingValues(16.dp),
@@ -105,8 +101,6 @@ fun SearchScreen(
         }
     }
 }
-
-// --- Visual Items ---
 
 @Composable
 fun SearchClassItem(result: SearchResult.ClassResult) {
@@ -134,8 +128,8 @@ fun SearchNoteItem(result: SearchResult.NoteResult) {
     SearchResultCard(
         icon = Icons.Default.Edit,
         title = result.entity.title,
-        subtitle = result.entity.content, // Show snippet of content
-        tag = "Note",
+        subtitle = result.entity.content,
+        tag = "Sticky",
         color = MaterialTheme.colorScheme.secondary
     )
 }

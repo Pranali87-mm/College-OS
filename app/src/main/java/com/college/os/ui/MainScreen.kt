@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -43,6 +44,7 @@ import com.college.os.feature.notes.presentation.NotesScreen
 import com.college.os.feature.planner.presentation.PlannerScreen
 import com.college.os.feature.resume.presentation.ResumeScreen
 import com.college.os.feature.search.presentation.SearchScreen
+import com.college.os.feature.settings.presentation.SettingsScreen
 import com.college.os.feature.timetable.presentation.TimetableScreen
 import com.college.os.feature.timer.presentation.TimerScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -56,9 +58,10 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     object Attendance : Screen("attendance", "Attendance", Icons.Default.Home)
     object Assignments : Screen("assignments", "Assignments", Icons.Default.CheckCircle)
     object Timetable : Screen("timetable", "Timetable", Icons.Default.List)
-    object Notes : Screen("notes", "Notes", Icons.Default.Edit)
+    object Notes : Screen("notes", "Sticky Notes", Icons.Default.Edit)
     object Timer : Screen("timer", "Focus Timer", Icons.Default.Star)
-    object Resume : Screen("resume", "Resume Builder", Icons.Default.Person) // Resume Feature
+    object Resume : Screen("resume", "Resume Builder", Icons.Default.Person)
+    object Settings : Screen("settings", "Settings", Icons.Default.Settings)
     object Search : Screen("search", "Search", Icons.Default.Search)
 }
 
@@ -102,12 +105,14 @@ fun MainScreen(
         Screen.Timetable,
         Screen.Notes,
         Screen.Timer,
-        Screen.Resume
+        Screen.Resume,
+        Screen.Settings
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
+    // Determine current title based on route
     val currentScreen = items.find {
         currentDestination?.hierarchy?.any { dest -> dest.route == it.route } == true
     } ?: Screen.Planner
@@ -202,6 +207,7 @@ fun MainScreen(
                 composable(Screen.Notes.route) { NotesScreen() }
                 composable(Screen.Timer.route) { TimerScreen() }
                 composable(Screen.Resume.route) { ResumeScreen() }
+                composable(Screen.Settings.route) { SettingsScreen() }
 
                 composable(Screen.Search.route) {
                     SearchScreen(onBack = { navController.popBackStack() })
